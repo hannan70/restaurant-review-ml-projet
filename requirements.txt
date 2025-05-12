@@ -8,3 +8,4 @@ ipykernel
 nltk 
 scikit-learn
 langdetect
+gTTS

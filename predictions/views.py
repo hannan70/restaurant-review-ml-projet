@@ -15,6 +15,8 @@ from .models import Feedback
 from collections import Counter
 import string
 import codecs
+from gtts import gTTS
+import time
 
 # Download NLTK data (this should be done only once during server startup)
 nltk.download('punkt')
@@ -114,10 +116,15 @@ def home_page(request):
     score = None
     total_positive_review = 0
     total_negative_review = 0
-
+    audio_file = None
+    input_value = ""
+    
     if request.method == 'POST':
         review_text = request.POST.get("review", "").strip()
-        if review_text:
+        action = request.POST.get("action")
+        input_value = review_text
+
+        if action =='predict' and review_text:
             sentiment, score = predict_sentiment(review_text)
             score_percentage = f"{score * 100:.2f}%"
 
@@ -126,6 +133,25 @@ def home_page(request):
                 review_text = review_text,
                 sentiment = sentiment
             ) 
+        elif action == 'tts' and review_text:
+
+            filename = f"output_{int(time.time())}.mp3"
+            audio_path = os.path.join("static", filename)
+            language = detect_language(review_text)
+            
+            # Convert text to speech
+            tts = gTTS(text=review_text, lang=language, slow=False)
+            tts.save(audio_path)
+
+            # Return relative path to static folder
+            audio_file = f"static/{filename}"
+
+            # Clean up old audio files to avoid clutter
+            for f in os.listdir("static"):
+                if f.startswith("output_") and f != filename:
+                    os.remove(os.path.join("static", f))
+
+
         else:
             sentiment = "Invalid"
             score_percentage = "0.00%"
@@ -135,6 +161,8 @@ def home_page(request):
             "score": score_percentage,
             "total_positive_review": total_positive_review,
             "total_negative_review": total_negative_review,
+            "audio": audio_file,
+            "input_value": input_value
         }
 
     # read all feedbacks
@@ -151,6 +179,8 @@ def home_page(request):
         "score": score_percentage,
         "total_positive_review": total_positive_review,
         "total_negative_review": total_negative_review,
+        "audio": audio_file,
+        "input_value": input_value
     }
         
     return render(request, "index.html", context)

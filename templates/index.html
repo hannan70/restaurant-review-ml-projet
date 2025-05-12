@@ -1,3 +1,4 @@
+{% load static %}
 <!doctype html>
 <html lang="en">
   <head>
@@ -8,10 +9,29 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">  
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
     <style>
         body {
             font-family: "Roboto", sans-serif;
             background-color: #faebd761;
+        }
+        .text_btn i {
+            padding-left: 7px;
+        }
+        .text_btn {
+            background-color: #DD3333;
+            border: none;
+            color: #fff;
+            font-weight: 500;
+            padding: 13px 22px;
+            border-radius: 5px;
+            margin-right: 10px;
+            transition: all .3s ease-in-out;
+        }
+        .text_btn:hover {
+            background-color: #000;
         }
     </style>
   </head>
@@ -26,14 +46,23 @@
                         <h2 class="mt-3 mb-4">Multi-Language Sentiment Analysis System </h2>
                         <form action="{% url 'home-page' %}" method="post">
                             {% csrf_token %}
-                            <textarea name="review" rows="4" id="" class="form-control"></textarea>
-                            <button type="submit" class="btn btn-warning btn-lg mt-3">Review Predict</button>
+                            <textarea name="review" rows="4" id="" class="form-control">{{ input_value }}</textarea>
+                            <button type="submit" name="action" value="predict" class="text_btn mt-4">Review Predict</button>
+                            <button type="submit" name="action" value="tts" class="text_btn mt-4">Text To Speech <i class="fa-solid fa-volume-high"></i></button>
                         </form>
                         <div class="feedback mt-4">
                             <h5>Feedback: {{ sentiment }}</h5>
                             <h5>Accuracy: {{ score }} </h5>
                         </div>
                     </div>
+                     {% if audio %}
+                        <div style="display: none;">
+                            <h3>Playback:</h3>
+                            <audio controls autoplay>
+                                <source src="{{ audio }}" type="audio/mpeg">
+                            </audio>
+                        </div>
+                        {% endif %}
                 </div>
                 <div class="col-md-5">
                     <div class="pie_chart card p-3" style="width: 400px; height: 400px;">
